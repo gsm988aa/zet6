@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "dma.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
@@ -94,6 +95,11 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 	uint16_t	AD_Value;
+	uint8_t ADC_Conert_array[2];
+//				 high = (s >> 8) & 0xff; //?8?
+//  low = s & 0xff; //?8?
+//	s = (short) (high << 8) | low; //java short?????
+ 
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -114,6 +120,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
@@ -131,7 +138,16 @@ int main(void)
 		HAL_ADC_PollForConversion(&hadc1, 50);
 		if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC)){
 		AD_Value = HAL_ADC_GetValue(&hadc1); 
-		printf("[\tmain]info:v=%.1fmv\r\n",AD_Value*3300.0/4096); }
+	  ADC_Conert_array[1]=(AD_Value>>8) & 0x0f;
+     ADC_Conert_array[0]=AD_Value&0xff; 
+
+		// ADC_Conert_array[0]=AD_Value*256/4096; 
+			 	printf("[\tmain]infohigh:v=%d \r\n ",ADC_Conert_array[1]); 
+			printf("[\tmain]infolow:v=%d \r\n ",ADC_Conert_array[0]); 
+   	printf("[\tmain]info:v=%.1fmv\r\n ",AD_Value*3300.0/4096); 
+		 HAL_SPI_Transmit(&hspi1, ADC_Conert_array, 1 ,2);
+		
+		}
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

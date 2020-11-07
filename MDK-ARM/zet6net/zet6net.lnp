@@ -3,6 +3,7 @@
 "zet6net\main.o"
 "zet6net\gpio.o"
 "zet6net\adc.o"
+"zet6net\dma.o"
 "zet6net\spi.o"
 "zet6net\usart.o"
 "zet6net\stm32f1xx_it.o"

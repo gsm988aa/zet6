@@ -30,6 +30,7 @@ zet6net\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 zet6net\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h
 zet6net\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 zet6net\main.o: ../Core/Inc/adc.h
+zet6net\main.o: ../Core/Inc/dma.h
 zet6net\main.o: ../Core/Inc/spi.h
 zet6net\main.o: ../Core/Inc/usart.h
 zet6net\main.o: ../Core/Inc/gpio.h
