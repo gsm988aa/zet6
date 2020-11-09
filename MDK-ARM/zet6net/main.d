@@ -34,4 +34,5 @@ zet6net\main.o: ../Core/Inc/dma.h
 zet6net\main.o: ../Core/Inc/spi.h
 zet6net\main.o: ../Core/Inc/usart.h
 zet6net\main.o: ../Core/Inc/gpio.h
+zet6net\main.o: ../Core/Inc/bsp_dht21.h
 zet6net\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

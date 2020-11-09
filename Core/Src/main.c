@@ -27,6 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "bsp_dht21.h"
 #include "stdio.h"
 /* USER CODE END Includes */
 
@@ -94,12 +95,18 @@ int fputc(int ch, FILE *f){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint16_t	AD_Value;
-	uint8_t ADC_Conert_array[2];
+	uint16_t	AD_Value,AD_Value_get;
+	uint8_t ADC_Convert_array[2];
 //				 high = (s >> 8) & 0xff; //?8?
 //  low = s & 0xff; //?8?
 //	s = (short) (high << 8) | low; //java short?????
  
+			
+ 
+			
+	
+	
+	
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -124,6 +131,7 @@ int main(void)
   MX_ADC1_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -133,21 +141,31 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-		HAL_Delay(500);
+ 			HAL_Delay(500);
+			/* USER CODE END WHILE */ 
+		DHT_data d = DHT_getData(DHT22);
+     printf("Temp: %2.1f \r\n", d.temp  );
+ 
+		
+		
+		
 		HAL_ADC_Start(&hadc1); 
 		HAL_ADC_PollForConversion(&hadc1, 50);
 		if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC)){
 		AD_Value = HAL_ADC_GetValue(&hadc1); 
-	  ADC_Conert_array[1]=(AD_Value>>8) & 0x0f;
-     ADC_Conert_array[0]=AD_Value&0xff; 
+		HAL_SPI_Receive(&hspi1,ADC_Convert_array,1,2);
+			 AD_Value_get= ( ADC_Convert_array[1]   <<8 )+ ADC_Convert_array[0]; 
+			printf("[\tmain]Slave2:v=%.3f\r\n",AD_Value_get*3.3/4096  );
+			printf("[\tmain]Master:v=%.3f\r\n",AD_Value*3.3/4096);
+		}
 
 		// ADC_Conert_array[0]=AD_Value*256/4096; 
-			 	printf("[\tmain]infohigh:v=%d \r\n ",ADC_Conert_array[1]); 
-			printf("[\tmain]infolow:v=%d \r\n ",ADC_Conert_array[0]); 
-   	printf("[\tmain]info:v=%.1fmv\r\n ",AD_Value*3300.0/4096); 
-		 HAL_SPI_Transmit(&hspi1, ADC_Conert_array, 1 ,2);
-		
-		}
+//			 	printf("[\tmain]infohigh:v=%d \r\n ",ADC_Conert_array[1]); 
+//			printf("[\tmain]infolow:v=%d \r\n ",ADC_Conert_array[0]); 
+//   	printf("[\tmain]info:v=%.1fmv\r\n ",AD_Value*3300.0/4096); 
+//		 HAL_SPI_Transmit(&hspi1, ADC_Conert_array, 1 ,2);
+ 
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

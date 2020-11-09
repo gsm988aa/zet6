@@ -4,22 +4,18 @@
 	[
 		{
 			"label": "Build project",
-			"group":
-			{
+			"group": {
 				"kind": "build",
 				"isDefault": true
 			},
 			"type": "shell",
 			"command": "c:/Users/Administrator/.vscode/extensions/buzzyelectronics.stm-helper-1.2.9/BuildTools/bin/make.exe",
-			"args":
-			[
+			"args": [
 				"GCC_PATH=c:/Users/Administrator/.vscode/extensions/buzzyelectronics.stm-helper-1.2.9/ArmGcc/bin",
 				"-j6"
 			],
-			"problemMatcher":
-			{
-				"pattern":
-				{
+			"problemMatcher": {
+				"pattern": {
 					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
 					"file": 1,
 					"line": 2,
@@ -28,8 +24,7 @@
 					"message": 5
 				}
 			},
-			"presentation":
-			{
+			"presentation": {
 				"focus": true
 			}
 		},
@@ -37,18 +32,15 @@
 			"label": "Compile current file",
 			"type": "shell",
 			"command": "c:/Users/Administrator/.vscode/extensions/buzzyelectronics.stm-helper-1.2.9/ArmGcc/bin/arm-none-eabi-gcc.exe",
-			"args":
-			[
+			"args": [
 				"-c",
-				"-DUSE_HAL_DRIVER", 
+				"-DUSE_HAL_DRIVER",
 				"-DSTM32F103xE",
-
-				"-ICore/Inc", 
-				"-IDrivers/STM32F1xx_HAL_Driver/Inc", 
-				"-IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy", 
-				"-IDrivers/CMSIS/Device/ST/STM32F1xx/Include", 
+				"-ICore/Inc",
+				"-IDrivers/STM32F1xx_HAL_Driver/Inc",
+				"-IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy",
+				"-IDrivers/CMSIS/Device/ST/STM32F1xx/Include",
 				"-IDrivers/CMSIS/Include",
-
 				"-mcpu=cortex-m3",
 				"-mthumb",
 				"-Og",
@@ -62,12 +54,10 @@
 				"-MF'build/${fileBasenameNoExtension}.d'",
 				"'${relativeFile}'",
 				"-o",
-				"'build/${fileBasenameNoExtension}.o'",
+				"'build/${fileBasenameNoExtension}.o'"
 			],
-			"problemMatcher":
-			{
-				"pattern":
-				{
+			"problemMatcher": {
+				"pattern": {
 					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
 					"file": 1,
 					"line": 2,
@@ -76,8 +66,7 @@
 					"message": 5
 				}
 			},
-			"presentation":
-			{
+			"presentation": {
 				"focus": true
 			}
 		},
@@ -85,8 +74,7 @@
 			"label": "Download",
 			"type": "shell",
 			"command": "c:/Users/Administrator/.vscode/extensions/buzzyelectronics.stm-helper-1.2.9/OpenOCD/bin/openocd.exe",
-			"args":
-			[
+			"args": [
 				"-f",
 				"c:/Users/Administrator/.vscode/extensions/buzzyelectronics.stm-helper-1.2.9/OpenOCD/scripts/interface/stlink.cfg",
 				"-f",
@@ -98,6 +86,6 @@
 				"-c exit"
 			],
 			"problemMatcher": []
-		},
+		}
 	]
 }

@@ -1,5 +1,6 @@
 --cpu Cortex-M3
 "zet6net\startup_stm32f103xe.o"
+"zet6net\bsp_dht21.o"
 "zet6net\main.o"
 "zet6net\gpio.o"
 "zet6net\adc.o"
