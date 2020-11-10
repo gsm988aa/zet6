@@ -140,9 +140,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+ 
  			HAL_Delay(500);
-			/* USER CODE END WHILE */ 
+		
+		
+		
 		DHT_data d = DHT_getData(DHT22);
      printf("Temp: %2.1f \r\n", d.temp  );
  
@@ -159,16 +161,20 @@ int main(void)
 			printf("[\tmain]Master:v=%.3f\r\n",AD_Value*3.3/4096);
 		}
 
+		  }
+
 		// ADC_Conert_array[0]=AD_Value*256/4096; 
 //			 	printf("[\tmain]infohigh:v=%d \r\n ",ADC_Conert_array[1]); 
 //			printf("[\tmain]infolow:v=%d \r\n ",ADC_Conert_array[0]); 
 //   	printf("[\tmain]info:v=%.1fmv\r\n ",AD_Value*3300.0/4096); 
 //		 HAL_SPI_Transmit(&hspi1, ADC_Conert_array, 1 ,2);
- 
 
-    /* USER CODE BEGIN 3 */
-  }
+
+	
+	/* USER CODE BEGIN 3 */
+	
   /* USER CODE END 3 */
+   /* USER CODE END WHILE */ 
 }
 
 /**
