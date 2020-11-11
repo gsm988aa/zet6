@@ -175,7 +175,7 @@ int main(void)
 		if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC)){
 		AD_Value = HAL_ADC_GetValue(&hadc1); 
 		HAL_SPI_Receive(&hspi1,ADC_Convert_array,1,2);
-			 AD_Value_get= ( ADC_Convert_array[1]   <<8 )+ ADC_Convert_array[0]; 
+	  AD_Value_get= ( ADC_Convert_array[1]   <<8 )+ ADC_Convert_array[0]; 
 			printf("[\tmain]Slave2:v=%.3f\r\n",AD_Value_get*3.3/4096  );
 			printf("[\tmain]Master:v=%.3f\r\n",AD_Value*3.3/4096);
 		}
