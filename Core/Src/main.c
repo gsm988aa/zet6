@@ -21,6 +21,7 @@
 #include "main.h"
 #include "adc.h"
 #include "dma.h"
+#include "i2c.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
@@ -101,10 +102,6 @@ int main(void)
 //  low = s & 0xff; //?8?
 //	s = (short) (high << 8) | low; //java short?????
  
-			
- 
-			
-	
 	
 	
   /* USER CODE END 1 */
@@ -132,7 +129,29 @@ int main(void)
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_SPI2_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+// 			HAL_Delay(500);
+//		
+//		
+//		
+//		DHT_data d = DHT_getData(DHT22);
+//     printf("Temp: %2.1f \r\n", d.temp  );
+// 
+//		
+//		
+//		
+//		HAL_ADC_Start(&hadc1); 
+//		HAL_ADC_PollForConversion(&hadc1, 50);
+//		if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC)){
+//		AD_Value = HAL_ADC_GetValue(&hadc1); 
+//		HAL_SPI_Receive(&hspi1,ADC_Convert_array,1,2);
+//			 AD_Value_get= ( ADC_Convert_array[1]   <<8 )+ ADC_Convert_array[0]; 
+//			printf("[\tmain]Slave2:v=%.3f\r\n",AD_Value_get*3.3/4096  );
+//			printf("[\tmain]Master:v=%.3f\r\n",AD_Value*3.3/4096);
+//		}
+
+//		  }
 
   /* USER CODE END 2 */
 
@@ -169,14 +188,13 @@ int main(void)
 //   	printf("[\tmain]info:v=%.1fmv\r\n ",AD_Value*3300.0/4096); 
 //		 HAL_SPI_Transmit(&hspi1, ADC_Conert_array, 1 ,2);
 
+    /* USER CODE END WHILE */
 
-	
-	/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 	
   /* USER CODE END 3 */
-   /* USER CODE END WHILE */ 
 }
- 
+
 /**
   * @brief System Clock Configuration
   * @retval None
