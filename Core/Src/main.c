@@ -20,9 +20,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "dma.h"
-#include "i2c.h"
-#include "rtc.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
@@ -31,6 +28,11 @@
 /* USER CODE BEGIN Includes */
 #include "bsp_dht21.h"
 #include "stdio.h"
+#include "w5500.h"
+#include "socket.h"
+#include "wizchip_conf.h"
+#include "loopback.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,6 +42,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define SOCK_TCPS        0
+#define SOCK_UDPS        1
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,13 +54,26 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+wiz_NetInfo gWIZNETINFO = { .mac = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05},
+                            .ip = {192, 168, 1, 88},
+                            .sn = {255, 255, 255, 0},
+                            .gw = {192, 168, 1, 1},
+                            .dns = {8, 8, 8, 8},
+                            .dhcp = NETINFO_STATIC };
 
+uint8_t gDATABUF[2048];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void W5500_Select(void);
+void W5500_Unselect(void);
+void W5500_ReadBuff(uint8_t* buff, uint16_t len);
+void W5500_WriteBuff(uint8_t* buff, uint16_t len);
+uint8_t W5500_ReadByte(void);
+void W5500_WriteByte(uint8_t byte);
+void network_init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -97,6 +114,11 @@ int fputc(int ch, FILE *f){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	
+	uint8_t tmp;
+  int32_t retr = 0;
+  uint8_t memsize[2][8] = {{2,2,2,2,2,2,2,2},{2,2,2,2,2,2,2,2}};
+		
 	uint16_t	AD_Value,AD_Value_get;
 	uint8_t ADC_Convert_array[2];
 //				 high = (s >> 8) & 0xff; //?8?
@@ -125,14 +147,35 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_ADC1_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_SPI2_Init();
-  MX_I2C1_Init();
-  MX_RTC_Init();
+	
+
   /* USER CODE BEGIN 2 */
+	reg_wizchip_cs_cbfunc(W5500_Select, W5500_Unselect);
+  reg_wizchip_spi_cbfunc(W5500_ReadByte, W5500_WriteByte);
+  reg_wizchip_spiburst_cbfunc(W5500_ReadBuff, W5500_WriteBuff);
+	
+	
+	
+  /* WIZCHIP SOCKET Buffer initialize */
+  if(ctlwizchip(CW_INIT_WIZCHIP,(void*)memsize) == -1)
+  {
+     printf("WIZCHIP Initialized fail.\r\n");
+     while(1);
+  }
+
+  /* PHY link status check */
+  do
+  {
+     if(ctlwizchip(CW_GET_PHYLINK, (void*)&tmp) == -1)
+        printf("Unknown PHY Link stauts.\r\n");
+  }while(tmp == PHY_LINK_OFF);
+
+  network_init();
+
 // 			HAL_Delay(500);
 //		
 //		
@@ -162,27 +205,34 @@ int main(void)
   while (1)
   {
  
- 			HAL_Delay(500);
-		
-		
-		
+ 		HAL_Delay(500);
+		 
 		DHT_data d = DHT_getData(DHT22);
-     printf("Temp: %2.1f \r\n", d.temp  );
+     printf("Temp: %2.1f \r\n", d.temp );
  
 		
+		if( (retr = loopback_tcps(SOCK_TCPS, gDATABUF, 5000)) < 0) {
+      printf("SOCKET ERROR : %ld\r\n", retr);
+    }
+
+		if( (retr = loopback_udps(SOCK_UDPS, gDATABUF, 3000)) < 0) {
+			printf("SOCKET ERROR : %ld\r\n", retr);
+		}
 		
-		
-		HAL_ADC_Start(&hadc1); 
-		HAL_ADC_PollForConversion(&hadc1, 50);
-		if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC)){
+					HAL_ADC_Start(&hadc1); 
+			HAL_ADC_PollForConversion(&hadc1, 50);
+		if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC))
+			{
 		AD_Value = HAL_ADC_GetValue(&hadc1); 
 		HAL_SPI_Receive(&hspi1,ADC_Convert_array,1,2);
 	  AD_Value_get= ( ADC_Convert_array[1]   <<8 )+ ADC_Convert_array[0]; 
 			printf("[\tmain]Slave2:v=%.3f\r\n",AD_Value_get*3.3/4096  );
 			printf("[\tmain]Master:v=%.3f\r\n",AD_Value*3.3/4096);
-		}
-
 		  }
+ 
+	}
+		
+ 
 
 		// ADC_Conert_array[0]=AD_Value*256/4096; 
 //			 	printf("[\tmain]infohigh:v=%d \r\n ",ADC_Conert_array[1]); 
@@ -210,11 +260,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
@@ -235,8 +284,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_ADC;
-  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
@@ -245,7 +293,48 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void W5500_Select(void) {
+  HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_RESET);
+}
 
+void W5500_Unselect(void) {
+  HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_SET);
+}
+
+void W5500_ReadBuff(uint8_t* buff, uint16_t len) {
+  HAL_SPI_Receive(&hspi2, buff, len, HAL_MAX_DELAY);
+}
+
+void W5500_WriteBuff(uint8_t* buff, uint16_t len) {
+  HAL_SPI_Transmit(&hspi2, buff, len, HAL_MAX_DELAY);
+}
+
+uint8_t W5500_ReadByte(void) {
+  uint8_t byte;
+  W5500_ReadBuff(&byte, sizeof(byte));
+  return byte;
+}
+
+void W5500_WriteByte(uint8_t byte) {
+  W5500_WriteBuff(&byte, sizeof(byte));
+}
+
+void network_init(void)
+{
+  uint8_t tmpstr[6];
+  ctlnetwork(CN_SET_NETINFO, (void*)&gWIZNETINFO);
+  ctlnetwork(CN_GET_NETINFO, (void*)&gWIZNETINFO);
+
+  // Display Network Information
+  ctlwizchip(CW_GET_ID,(void*)tmpstr);
+  printf("\r\n=== %s NET CONF ===\r\n",(char*)tmpstr);
+  printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\r\n",gWIZNETINFO.mac[0],gWIZNETINFO.mac[1],gWIZNETINFO.mac[2],gWIZNETINFO.mac[3],gWIZNETINFO.mac[4],gWIZNETINFO.mac[5]);
+  printf("SIP: %d.%d.%d.%d\r\n", gWIZNETINFO.ip[0],gWIZNETINFO.ip[1],gWIZNETINFO.ip[2],gWIZNETINFO.ip[3]);
+  printf("GAR: %d.%d.%d.%d\r\n", gWIZNETINFO.gw[0],gWIZNETINFO.gw[1],gWIZNETINFO.gw[2],gWIZNETINFO.gw[3]);
+  printf("SUB: %d.%d.%d.%d\r\n", gWIZNETINFO.sn[0],gWIZNETINFO.sn[1],gWIZNETINFO.sn[2],gWIZNETINFO.sn[3]);
+  printf("DNS: %d.%d.%d.%d\r\n", gWIZNETINFO.dns[0],gWIZNETINFO.dns[1],gWIZNETINFO.dns[2],gWIZNETINFO.dns[3]);
+  printf("======================\r\n");
+}
 /* USER CODE END 4 */
 
 /**
