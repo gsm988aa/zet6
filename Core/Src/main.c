@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
@@ -44,6 +43,13 @@
 /* USER CODE BEGIN PD */
 #define SOCK_TCPS        0
 #define SOCK_UDPS        1
+
+#include <stdio.h>
+int fputc(int ch, FILE *f){
+	uint8_t temp[1] = {ch};
+	HAL_UART_Transmit(&huart1, temp, 1, 2); 
+	return ch;
+}
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -100,11 +106,7 @@ void network_init(void);
 //		AD_Value = HAL_ADC_GetValue(&hadc1); 
 //		printf("[\tmain]info:v=%.1fmv\r\n",AD_Value*3300.0/4096); }
 
-int fputc(int ch, FILE *f){
-	uint8_t temp[1] = {ch};
-	HAL_UART_Transmit(&huart1, temp, 1, 2);//huart1??????????
-	return ch;
-}
+ 
 /* USER CODE END 0 */
 
 /**
@@ -119,11 +121,9 @@ int main(void)
   int32_t retr = 0;
   uint8_t memsize[2][8] = {{2,2,2,2,2,2,2,2},{2,2,2,2,2,2,2,2}};
 		
-	uint16_t	AD_Value,AD_Value_get;
-	uint8_t ADC_Convert_array[2];
-//				 high = (s >> 8) & 0xff; //?8?
-//  low = s & 0xff; //?8?
-//	s = (short) (high << 8) | low; //java short?????
+//	uint16_t	AD_Value,AD_Value_get;
+//	uint8_t ADC_Convert_array[2];
+
  
 	
 	
@@ -147,12 +147,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ADC1_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_SPI2_Init();
-	
-
   /* USER CODE BEGIN 2 */
 	reg_wizchip_cs_cbfunc(W5500_Select, W5500_Unselect);
   reg_wizchip_spi_cbfunc(W5500_ReadByte, W5500_WriteByte);
@@ -173,7 +170,7 @@ int main(void)
      if(ctlwizchip(CW_GET_PHYLINK, (void*)&tmp) == -1)
         printf("Unknown PHY Link stauts.\r\n");
   }while(tmp == PHY_LINK_OFF);
-
+	printf("SOCKET ERROR =1");
   network_init();
 
 // 			HAL_Delay(500);
@@ -204,31 +201,33 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
- 
+		
+//		printf("SOCKET ERROR =0");
+//   printf("SOCKET ERROR " );
  		HAL_Delay(500);
 		 
-		DHT_data d = DHT_getData(DHT22);
-     printf("Temp: %2.1f \r\n", d.temp );
+//		DHT_data d = DHT_getData(DHT22);
+//     printf("Temp: %2.1f \r\n", d.temp );
  
 		
 		if( (retr = loopback_tcps(SOCK_TCPS, gDATABUF, 5000)) < 0) {
       printf("SOCKET ERROR : %ld\r\n", retr);
     }
 
-		if( (retr = loopback_udps(SOCK_UDPS, gDATABUF, 3000)) < 0) {
-			printf("SOCKET ERROR : %ld\r\n", retr);
-		}
+//		if( (retr = loopback_udps(SOCK_UDPS, gDATABUF, 3000)) < 0) {
+//			printf("SOCKET ERROR : %ld\r\n", retr);
+//		}
 		
-					HAL_ADC_Start(&hadc1); 
-			HAL_ADC_PollForConversion(&hadc1, 50);
-		if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC))
-			{
-		AD_Value = HAL_ADC_GetValue(&hadc1); 
-		HAL_SPI_Receive(&hspi1,ADC_Convert_array,1,2);
-	  AD_Value_get= ( ADC_Convert_array[1]   <<8 )+ ADC_Convert_array[0]; 
-			printf("[\tmain]Slave2:v=%.3f\r\n",AD_Value_get*3.3/4096  );
-			printf("[\tmain]Master:v=%.3f\r\n",AD_Value*3.3/4096);
-		  }
+//					HAL_ADC_Start(&hadc1); 
+//			HAL_ADC_PollForConversion(&hadc1, 50);
+//		if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC))
+//			{
+//		AD_Value = HAL_ADC_GetValue(&hadc1); 
+//		HAL_SPI_Receive(&hspi1,ADC_Convert_array,1,2);
+//	  AD_Value_get= ( ADC_Convert_array[1]   <<8 )+ ADC_Convert_array[0]; 
+//			printf("[\tmain]Slave2:v=%.3f\r\n",AD_Value_get*3.3/4096  );
+//			printf("[\tmain]Master:v=%.3f\r\n",AD_Value*3.3/4096);
+//		  }
  
 	}
 		
@@ -255,7 +254,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -281,12 +279,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
-  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
