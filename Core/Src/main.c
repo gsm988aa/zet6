@@ -214,9 +214,9 @@ int main(void)
       printf("SOCKET ERROR : %ld\r\n", retr);
     }
 
-//		if( (retr = loopback_udps(SOCK_UDPS, gDATABUF, 3000)) < 0) {
-//			printf("SOCKET ERROR : %ld\r\n", retr);
-//		}
+ 		if( (retr = loopback_udps(SOCK_UDPS, gDATABUF, 3000)) < 0) {
+ 			printf("SOCKET ERROR : %ld\r\n", retr);
+ 		}
 		
 //					HAL_ADC_Start(&hadc1); 
 //			HAL_ADC_PollForConversion(&hadc1, 50);
