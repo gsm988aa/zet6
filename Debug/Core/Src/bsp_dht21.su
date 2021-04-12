@@ -1,0 +1,3 @@
+bsp_dht21.c:10:13:goToOutput	24	static
+bsp_dht21.c:28:13:goToInput	24	static
+bsp_dht21.c:42:10:DHT_getData	48	static

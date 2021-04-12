@@ -9,7 +9,25 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include Drivers/STM32F1xx_HAL_Driver/Src/subdir.mk
+-include Drivers/STM32F1xx_HAL_Driver/subdir.mk
+-include Core/ioLibrary/Internet/httpServer/subdir.mk
+-include Core/ioLibrary/Internet/TFTP/subdir.mk
+-include Core/ioLibrary/Internet/SNTP/subdir.mk
+-include Core/ioLibrary/Internet/SNMP/subdir.mk
+-include Core/ioLibrary/Internet/MQTT/MQTTPacket/src/subdir.mk
+-include Core/ioLibrary/Internet/MQTT/subdir.mk
+-include Core/ioLibrary/Internet/FTPServer/subdir.mk
+-include Core/ioLibrary/Internet/FTPClient/subdir.mk
+-include Core/ioLibrary/Internet/DNS/subdir.mk
+-include Core/ioLibrary/Internet/DHCP/subdir.mk
+-include Core/ioLibrary/Ethernet/W5500/subdir.mk
+-include Core/ioLibrary/Ethernet/W5300/subdir.mk
+-include Core/ioLibrary/Ethernet/W5200/subdir.mk
+-include Core/ioLibrary/Ethernet/W5100S/subdir.mk
+-include Core/ioLibrary/Ethernet/W5100/subdir.mk
+-include Core/ioLibrary/Ethernet/subdir.mk
+-include Core/ioLibrary/Application/multicast/subdir.mk
+-include Core/ioLibrary/Application/loopback/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include subdir.mk
@@ -61,8 +79,8 @@ all: main-build
 main-build: zet6net.elf secondary-outputs
 
 # Tool invocations
-zet6net.elf: $(OBJS) $(USER_OBJS) C:\Users\Administrator\STM32CubeIDE\workspace_1.5.0\zet6net\STM32F103ZETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "zet6net.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\Administrator\STM32CubeIDE\workspace_1.5.0\zet6net\STM32F103ZETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="zet6net.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+zet6net.elf: $(OBJS) $(USER_OBJS) /Users/siminggao/Desktop/zet6/STM32F103ZETx_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "zet6net.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"/Users/siminggao/Desktop/zet6/STM32F103ZETx_FLASH.ld" --specs=nosys.specs -Wl,-Map="zet6net.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
